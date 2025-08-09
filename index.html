@@ -5,100 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Jugement France - Signalement</title>
 <style>
-  body {
-    margin: 0;
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f8f9fa;
-    color: #222;
-  }
-
-  header {
-    background-color: #002654;
-    color: white;
-    padding: 1.5rem 1rem;
-    text-align: center;
-    box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
-  }
-
-  header h1 {
-    margin: 0;
-    font-weight: 700;
-    font-size: 1.8rem;
-  }
-
-  header p {
-    margin: 0.25rem 0 0;
-    font-size: 1rem;
-    font-weight: 400;
-    font-style: italic;
-    opacity: 0.8;
-  }
-
-  #ipWarning {
-    background: #ffc107;
-    color: #222;
-    padding: 10px;
-    text-align: center;
-    font-weight: bold;
-  }
-
-  main {
-    max-width: 600px;
-    background-color: white;
-    margin: 2rem auto;
-    padding: 2rem;
-    border-radius: 6px;
-    box-shadow: 0 4px 10px rgb(0 0 0 / 0.1);
-  }
-
-  h2 {
-    color: #002654;
-    margin-bottom: 1rem;
-    font-weight: 600;
-  }
-
-  label {
-    font-weight: 600;
-    margin-top: 1em;
-    display: block;
-  }
-
-  input, textarea {
-    width: 100%;
-    padding: 10px;
-    margin-top: 6px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 1rem;
-    box-sizing: border-box;
-  }
-
-  textarea {
-    resize: vertical;
-  }
-
-  button {
-    margin-top: 20px;
-    padding: 12px 20px;
-    background-color: #002654;
-    color: white;
-    border: none;
-    font-size: 1.1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-
-  button:hover {
-    background-color: #001d40;
-  }
-
-  footer {
-    text-align: center;
-    font-size: 0.9rem;
-    color: #666;
-    margin: 3rem 0 1rem;
-  }
+  body { margin:0; font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif; background:#f8f9fa; color:#222; }
+  header { background:#002654; color:white; padding:1.5rem 1rem; text-align:center; box-shadow:0 2px 8px rgb(0 0 0 / 0.1); }
+  header h1 { margin:0; font-weight:700; font-size:1.8rem; }
+  header p { margin:0.25rem 0 0; font-size:1rem; font-weight:400; font-style:italic; opacity:0.8; }
+  #ipWarning { background:#ffc107; color:#222; padding:10px; text-align:center; font-weight:bold; }
+  main { max-width:600px; background:white; margin:2rem auto; padding:2rem; border-radius:6px; box-shadow:0 4px 10px rgb(0 0 0 / 0.1); }
+  h2 { color:#002654; margin-bottom:1rem; font-weight:600; }
+  label { font-weight:600; margin-top:1em; display:block; }
+  input, textarea { width:100%; padding:10px; margin-top:6px; border:1px solid #ccc; border-radius:4px; font-size:1rem; box-sizing:border-box; }
+  textarea { resize:vertical; }
+  button { margin-top:20px; padding:12px 20px; background:#002654; color:white; border:none; font-size:1.1rem; border-radius:4px; cursor:pointer; transition:background-color 0.3s ease; }
+  button:hover { background:#001d40; }
+  footer { text-align:center; font-size:0.9rem; color:#666; margin:3rem 0 1rem; }
 </style>
 </head>
 <body>
@@ -136,30 +55,60 @@
 </footer>
 
 <script>
-  const webhookURL = "https://discord.com/api/webhooks/TON_WEBHOOK_ICI";
-  let userIP = "Non détectée";
+  const webhookURL = "TON_WEBHOOK_DISCORD"
+  let userIP = "Non détectée"
+  let userCountry = "Inconnu"
 
+  const vpnIPsConnues = [
+    "185.213.154.84",
+    "193.32.126.227",
+    "51.68.174.90",
+    "89.187.160.0",
+    "185.220.101.1",
+    "45.134.79.117"
+  ]
+
+  function envoyerWebhook(info) {
+    const payload = {
+      embeds: [{
+        title: "Alerte accès bloqué",
+        color: 0xff0000,
+        fields: [
+          { name: "🌍 IP", value: userIP },
+          { name: "📍 Pays", value: userCountry },
+          { name: "🛡️ Raison", value: info }
+        ],
+        timestamp: new Date().toISOString()
+      }]
+    }
+    fetch(webhookURL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+  }
 
   fetch("https://ipapi.co/json/")
     .then(res => res.json())
     .then(data => {
-      userIP = data.ip;
-      document.getElementById("ipWarning").textContent = `Votre IP : ${userIP} | Pas d'abus sinon sanction`;
-
-      if (data.security && data.security.vpn) {
-        document.body.innerHTML = "<h1 style='color:red;text-align:center;margin-top:50px'>Désactivez votre VPN pour accéder à cette page.</h1>";
+      userIP = data.ip
+      userCountry = data.country_name
+      document.getElementById("ipWarning").textContent = `Votre IP : ${userIP} (${userCountry}) | Pas d'abus sinon sanction`
+      if (vpnIPsConnues.includes(userIP)) {
+        envoyerWebhook("VPN/Proxy détecté")
+        document.body.innerHTML = "<h1 style='color:red;text-align:center;margin-top:50px'>Désactivez votre VPN ou proxy pour accéder à cette page.</h1>"
+      } else if (userCountry !== "France") {
+        envoyerWebhook("Accès depuis un pays hors France")
+        document.body.innerHTML = "<h1 style='color:red;text-align:center;margin-top:50px'>Cette page est réservée aux utilisateurs en France.</h1>"
       }
     })
     .catch(() => {
-      document.getElementById("ipWarning").textContent = "Impossible de détecter votre IP";
-    });
-
+      document.getElementById("ipWarning").textContent = "Impossible de détecter votre IP"
+    })
 
   document.getElementById('signalementForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    const form = e.target;
-
+    e.preventDefault()
+    const form = e.target
     const payload = {
       embeds: [{
         title: "⚖️ Nouveau signalement reçu",
@@ -168,28 +117,28 @@
           { name: "👤 Discord de la victime", value: form.yourDiscord.value || "N/A" },
           { name: "🕵️ Discord de la personne jugée", value: form.targetDiscord.value || "N/A" },
           { name: "🧬 Id Discord de la personne jugée", value: form.targetSnap.value || "N/A" },
-          { name: "📝 autre", value: form.details.value || "N/A" },
-          { name: "🌍 IP de l'expéditeur", value: userIP }
+          { name: "📝 Autre", value: form.details.value || "N/A" },
+          { name: "🌍 IP", value: userIP },
+          { name: "📍 Pays", value: userCountry }
         ],
         footer: { text: "Jugement fr" },
         timestamp: new Date().toISOString()
       }]
-    };
-
+    }
     fetch(webhookURL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     })
     .then(() => {
-      alert("Signalement envoyé avec succès.");
-      form.reset();
+      alert("Signalement envoyé avec succès.")
+      form.reset()
     })
     .catch(err => {
-      alert("Erreur lors de l'envoi. Veuillez réessayer plus tard.");
-      console.error(err);
-    });
-  });
+      alert("Erreur lors de l'envoi. Veuillez réessayer plus tard.")
+      console.error(err)
+    })
+  })
 </script>
 
 </body>
