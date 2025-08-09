@@ -34,6 +34,14 @@
     opacity: 0.8;
   }
 
+  #ipWarning {
+    background: #ffc107;
+    color: #222;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+  }
+
   main {
     max-width: 600px;
     background-color: white;
@@ -95,12 +103,14 @@
 </head>
 <body>
 
+<div id="ipWarning">Chargement de votre IP...</div>
+
 <header>
   <h1>Jugement France</h1>
   <p>Plateforme officielle de signalement Jugement France</p>
 </header>
 
-<main>
+<main id="mainContent">
   <section>
     <h2>Déposer un signalement</h2>
     <form id="signalementForm" autocomplete="off">
@@ -126,7 +136,24 @@
 </footer>
 
 <script>
-  const webhookURL = "https://discord.com/api/webhooks/1403111934366187542/ppVxwNfXk-kf73zn0vdvdaycJ4e6XmIATIrrZPAOwn9i5uzwTse5glCqI-1fKyeyIe2c"; // Remplace par ton webhook Discord
+  const webhookURL = "https://discord.com/api/webhooks/TON_WEBHOOK_ICI";
+  let userIP = "Non détectée";
+
+
+  fetch("https://ipapi.co/json/")
+    .then(res => res.json())
+    .then(data => {
+      userIP = data.ip;
+      document.getElementById("ipWarning").textContent = `Votre IP : ${userIP} | Pas d'abus sinon sanction`;
+
+      if (data.security && data.security.vpn) {
+        document.body.innerHTML = "<h1 style='color:red;text-align:center;margin-top:50px'>Désactivez votre VPN pour accéder à cette page.</h1>";
+      }
+    })
+    .catch(() => {
+      document.getElementById("ipWarning").textContent = "Impossible de détecter votre IP";
+    });
+
 
   document.getElementById('signalementForm').addEventListener('submit', function(e) {
     e.preventDefault();
@@ -138,30 +165,13 @@
         title: "⚖️ Nouveau signalement reçu",
         color: 0x002654,
         fields: [
-          {
-            name: "👤 Discord de la victime",
-            value: form.yourDiscord.value || "N/A",
-            inline: false
-          },
-          {
-            name: "🕵️ Discord de la personne jugée",
-            value: form.targetDiscord.value || "N/A",
-            inline: false
-          },
-          {
-            name: "🧬 Id Discord de la personne jugée",
-            value: form.targetSnap.value || "N/A",
-            inline: false
-          },
-          {
-            name: "📝 autre",
-            value: form.details.value || "N/A",
-            inline: false
-          }
+          { name: "👤 Discord de la victime", value: form.yourDiscord.value || "N/A" },
+          { name: "🕵️ Discord de la personne jugée", value: form.targetDiscord.value || "N/A" },
+          { name: "🧬 Id Discord de la personne jugée", value: form.targetSnap.value || "N/A" },
+          { name: "📝 autre", value: form.details.value || "N/A" },
+          { name: "🌍 IP de l'expéditeur", value: userIP }
         ],
-        footer: {
-          text: "Jugement fr"
-        },
+        footer: { text: "Jugement fr" },
         timestamp: new Date().toISOString()
       }]
     };
